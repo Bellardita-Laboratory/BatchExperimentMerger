@@ -46,4 +46,5 @@ The borders, fps, speeds, and extensions of the new video can be changed at will
 # Credits
 
 [Chang Hui Simone Lin](https://github.com/SimpingOjou)
+
 [Walid Outtaleb](https://github.com/Nyllea)
