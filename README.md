@@ -30,14 +30,17 @@ Written for the Neural Circuitries and Motor Repair Laboratory in the University
 ## Figures
 
 ### First video for the example
+
 <img src='./img/sv.png'>
 
-### Second video for the exammple
+### Second video for the example
+
 <img src='./img/vv.png'>
 
 ### Result of the script
 
 The borders, fps, speeds, and extensions of the new video can be changed at will by changing the parameters in `main.py`
+
 <img src='./img/results.png'>
 
 # Credits
