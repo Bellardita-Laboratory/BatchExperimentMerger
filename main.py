@@ -1,4 +1,3 @@
-
 from moviepy.editor import VideoFileClip, CompositeVideoClip
 import os
 from multiprocessing import Pool
@@ -18,8 +17,16 @@ left_id = 'Left' # The string that identifies the left sided video
 sideview_id = '' # The string that identifies the sideview video
 ventral_id = 'SIDEVIEW' # The string that identifies the ventral video
 
-def merge_videos_top_bottom(video1, video2, output, fps=30, speed_factor=0.1,
-                            top_margin=50, middle_margin=50, bottom_margin=50, left_margin=30, right_margin=30):
+# Change these to change the parameters for the output videos
+fps = 30 # Frames per second of the output video
+speed_factor = 0.1 # Speed factor of the output video compared to the input
+top_margin = 50 # Margin at the top of the output video
+middle_margin = 50 # Margin between the two videos
+bottom_margin = 50 # Margin at the bottom of the output video
+left_margin = 30 # Margin at the left of the output video
+right_margin = 30 # Margin at the right of the output video
+
+def merge_videos_top_bottom(video1, video2, output):
     # Load video clips
     clip1 = VideoFileClip(video1)
     clip2 = VideoFileClip(video2)
