@@ -1,11 +1,12 @@
+
 from moviepy.editor import VideoFileClip, CompositeVideoClip
 import os
 from multiprocessing import Pool
 from tqdm import tqdm
 
 # Change these to choose where to load and save the data
-batch_folder_path = r'./Input/' # Path to the folder containing the experiment folders
-output_folder = r'./Output/' # Folder to save the merged videos
+batch_folder_path = r'D:\Stxbp1\Pre_surgery\Corridor\MU_Cx\bad' # Path to the folder containing the experiment folders
+output_folder = r'D:\Stxbp1\Pre_surgery\Corridor\MU_Cx\output' # Folder to save the merged videos
 
 # Change these to match the naming convention of the videos
 video_extension = '.avi' # The file extension of the videos
@@ -14,19 +15,11 @@ mouse_number_id = 'Mouse' # The string that identifies the mouse number. Format:
 run_number_id = 'Run' # The string that identifies the run number. Format: Run1, Run2, etc.
 right_id = 'Right' # The string that identifies the right sided video
 left_id = 'Left' # The string that identifies the left sided video
-sideview_id = '' # The string that identifies the sideview video
+sideview_id = 'VENTRALVIEW' # The string that identifies the sideview video
 ventral_id = 'SIDEVIEW' # The string that identifies the ventral video
 
-# Change these to change the parameters for the output videos
-fps = 30 # Frames per second of the output video
-speed_factor = 0.1 # Speed factor of the output video compared to the input
-top_margin = 50 # Margin at the top of the output video
-middle_margin = 50 # Margin between the two videos
-bottom_margin = 50 # Margin at the bottom of the output video
-left_margin = 30 # Margin at the left of the output video
-right_margin = 30 # Margin at the right of the output video
-
-def merge_videos_top_bottom(video1, video2, output):
+def merge_videos_top_bottom(video1, video2, output, fps=30, speed_factor=0.1,
+                            top_margin=50, middle_margin=50, bottom_margin=50, left_margin=30, right_margin=30):
     # Load video clips
     clip1 = VideoFileClip(video1)
     clip2 = VideoFileClip(video2)
@@ -93,6 +86,8 @@ def get_dictionaried_videos(avi_files):
 
         videos_dict[mouse_number][run_number].append(avi_file)
     
+    
+    
     print('\nOrganization found:')
     for key in videos_dict.keys():
         print(f'Mouse {key}:')
@@ -108,17 +103,24 @@ def batch_merge(videos_dict):
     
     print('\nMerging videos...')
 
-    args_list = [(mouse_number, run_number) for mouse_number in videos_dict for run_number in videos_dict[mouse_number]]
+    args_list = [(mouse_number, run_number, videos_dict[mouse_number][run_number]) for mouse_number in videos_dict for run_number in videos_dict[mouse_number] 
+                 if videos_dict[mouse_number][run_number] is not None and videos_dict[mouse_number] is not None]
     n_args = len(args_list)
+
     for _ in tqdm(p.imap_unordered(func=multiprocess_merge, iterable=args_list), total=n_args):
         pass
+
+    # for _ in tqdm(map(multiprocess_merge, args_list)):
+    #     pass
 
     p.close()
     p.join()
 
 def multiprocess_merge(data):
-    mouse_number, run_number = data
-    videos = videos_dict[mouse_number][run_number]
+    mouse_number, run_number, videos = data
+
+    if videos is None:
+        return
 
     sv = None
     vv = None
@@ -133,7 +135,7 @@ def multiprocess_merge(data):
     if ventral_id is None:
         vv = next(video for video in videos if video != sv)
 
-    if len(videos) == 2:
+    if len(videos) == 2 and sv is not None and vv is not None:
         output = os.path.join(output_folder, f'{mouse_number}_{run_number}.mp4')
         
         if os.path.exists(output):
@@ -143,7 +145,7 @@ def multiprocess_merge(data):
         # print(f'\nMerging {sv} and {vv} into {output}')
         merge_videos_top_bottom(vv, sv, output)
     else:
-        print(f'\nSkipping {mouse_number} {run_number}: {len(videos)} videos found.')
+        print(f'\nSkipping {mouse_number} {run_number}: {len(videos)} videos found - {sv} and {vv}')
 
 if __name__ == '__main__':
     # Retrieve all the videos in the batch_folder_path
@@ -154,6 +156,17 @@ if __name__ == '__main__':
     # Dictionary to store videos by mouse number and run number
     videos_dict = get_dictionaried_videos(avi_files)
 
+    # Check if videos_dict is None or empty
+    if not videos_dict:
+        print("No videos found to process. Exiting.")
+        exit()
+
+    # Ask the user if they want to continue
+    user_input = input("Do you want to continue with the merging process? (Y/n): ").strip().lower()
+    if user_input not in ['y', '']:
+        print("Process aborted by the user.")
+        exit()
+    
     if sideview_id == '' and ventral_id == '':
         raise ValueError('Both sideview_id and ventral_id are empty. Please fill at least one of them.')
     
