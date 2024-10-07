@@ -4,8 +4,8 @@ from multiprocessing import Pool
 from tqdm import tqdm
 
 # Change these to choose where to load and save the data
-batch_folder_path = r'D:\Stxbp1\Pre_surgery\Corridor\MU_Cx\bad' # Path to the folder containing the experiment folders
-output_folder = r'D:\Stxbp1\Pre_surgery\Corridor\MU_Cx\output' # Folder to save the merged videos
+batch_folder_path = r'./Test' # Path to the folder containing the experiment folders
+output_folder = r'./Output' # Folder to save the merged videos
 batch_name = 'WildType' # Name of the batch to be used in the output file names
 
 # Change these to match the naming convention of the videos
@@ -17,7 +17,7 @@ run_number_id = 'Run' # The string that identifies the run number. Format: Run1,
 right_id = 'Right' # The string that identifies the right sided video
 left_id = 'Left' # The string that identifies the left sided video
 cage_id = 'Cage' # The string that identifies the cage number. Format: Cage1, Cage2, etc.
-sideview_id = 'VENTRALVIEW' # The string that identifies the sideview video
+sideview_id = '' # The string that identifies the sideview video
 ventral_id = 'SIDEVIEW' # The string that identifies the ventral video
 
 
@@ -116,7 +116,7 @@ def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str,
         mouse_number = mouse_numbers[0]
 
         ## Extract run number from the file name
-        run_number = [part.replace(video_extension, '') for part in splitted_basename if run_number_id in part]
+        run_number = [part.replace(input_video_extension, '') for part in splitted_basename if run_number_id in part]
 
         # If no run number is found, skip the file
         if len(run_number) == 0:
@@ -128,8 +128,8 @@ def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str,
         
         run_number = run_number[0]
 
-        cage_number = [part.replace(video_extension, '') for part in parts if cage_id in part]
-      
+        cage_number = [part for part in splitted_basename if cage_id in part]
+
         # If the video is from the right/left side, add the right/left video keyword to the run number
         if right_id in base_name:
             run_number += split_char + right_video_keyword + split_char + cage_number[0]
@@ -221,7 +221,7 @@ def merge_videos(data:tuple[str,str,list[os.PathLike]], top_video_id:str, bottom
 
     # Check if the top and bottom videos were found
     if len(videos) == 2 and top_vid is not None and bottom_vid is not None:
-        output = os.path.join(output_folder, f'{mouse_number}{split_char}{run_number}.{output_video_extension}')
+        output = os.path.join(output_folder, f'{batch_name}{mouse_number}{split_char}{run_number}.{output_video_extension}')
         
         if os.path.exists(output):
             print(f'\nSkipping {mouse_number} {run_number}: {output} already exists.')
