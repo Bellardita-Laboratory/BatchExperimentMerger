@@ -169,6 +169,7 @@ def batch_merge_multiprocessing(filepaths_dict:dict[str,dict[str,list[os.PathLik
             split_char: Character used to split the file names.
             output_folder: Folder to save the merged videos into.
             output_video_extension: File extension of the output videos.
+            batch_name: Name of the batch to be used in the output file names.
     """
     # List of arguments to pass to the multiprocess_merge function
     args_list = [(mouse_number, run_number, filepaths_dict[mouse_number][run_number]) for mouse_number in filepaths_dict for run_number in filepaths_dict[mouse_number] 
@@ -197,6 +198,7 @@ def merge_videos(data:tuple[str,str,list[os.PathLike]], top_video_id:str, bottom
             split_char: Character used to split the file names.
             output_folder: Folder to save the merged videos into.
             output_video_extension: File extension of the output videos.
+            batch_name: Name of the batch to be used in the output file names.
     """
     # Unpack the data tuple
     mouse_number, run_number, videos = data
