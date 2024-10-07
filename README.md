@@ -39,7 +39,13 @@ Written for the Neural Circuitries and Motor Repair Laboratory in the University
 
 ### Result of the script
 
-The borders, fps, speeds, and extensions of the new video can be changed at will by changing the parameters in `main.py`
+The borders, fps, speeds, and extensions of the new video can be changed at will by changing the parameters in `main.py`. 
+
+The output video will be in `.mp4` format and follow the syntax below:
+
+```
+{batch_name}_{mouse_number}_{run_number}_{Left/Right}_{Cage}.mp4
+```
 
 <img src='./img/results.png'>
 
