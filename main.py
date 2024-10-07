@@ -4,7 +4,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 
 # Change these to choose where to load and save the data
-batch_folder_path = r'./Test' # Path to the folder containing the experiment folders
+batch_folder_path = r'./Input' # Path to the folder containing the experiment folders
 output_folder = r'./Output' # Folder to save the merged videos
 batch_name = 'WildType' # Name of the batch to be used in the output file names
 
@@ -183,61 +183,73 @@ def batch_merge_multiprocessing(filepaths_dict:dict[str,dict[str,list[os.PathLik
 
     print('\nMerging videos...')
 
+    # Initialize the VideoMerger object
+    vid_merger = VideoMerger(top_video_id, bottom_video_id, split_char, output_folder, output_video_extension, batch_name)
+    
     # Multiprocessing pool to merge the videos
     p = Pool()
-    for _ in tqdm(p.imap_unordered(func=lambda data: merge_videos(data, top_video_id, bottom_video_id, split_char, output_folder, output_video_extension, batch_name), iterable=args_list), total=n_args):
+    for _ in tqdm(p.imap_unordered(func=vid_merger.get_and_merge_videos, iterable=args_list), total=n_args):
         pass
 
     p.close()
     p.join()
 
-def merge_videos(data:tuple[str,str,list[os.PathLike]], top_video_id:str, bottom_video_id:str, 
-                 split_char:str, output_folder:str, output_video_extension:str, batch_name:str):
-    """
-        Merges the videos in the 'data' tuple.
+class VideoMerger:
+    def __init__(self, top_video_id:str, bottom_video_id:str, 
+            split_char:str, output_folder:str, output_video_extension:str, batch_name:str) -> None:
+        self.top_video_id = top_video_id
+        self.bottom_video_id = bottom_video_id
+        self.split_char = split_char
+        self.output_folder = output_folder
+        self.output_video_extension = output_video_extension
+        self.batch_name = batch_name
 
-        Args:
-            data: Tuple with the mouse number, run number and list of video paths.
-            top_video_id: String that identifies the top video.
-            bottom_video_id: String that identifies the bottom video.
-            split_char: Character used to split the file names.
-            output_folder: Folder to save the merged videos into.
-            output_video_extension: File extension of the output videos.
-            batch_name: Name of the batch to be used in the output file names.
-    """
-    # Unpack the data tuple
-    mouse_number, run_number, videos = data
+    def get_and_merge_videos(self, data:tuple[str,str,list[os.PathLike]]):
+        """
+            Merges the videos in the 'data' tuple.
 
-    # Check that the videos list is not None
-    if videos is None:
-        return
+            Args:
+                data: Tuple with the mouse number, run number and list of video paths.
+                top_video_id: String that identifies the top video.
+                bottom_video_id: String that identifies the bottom video.
+                split_char: Character used to split the file names.
+                output_folder: Folder to save the merged videos into.
+                output_video_extension: File extension of the output videos.
+                batch_name: Name of the batch to be used in the output file names.
+        """
+        # Unpack the data tuple
+        mouse_number, run_number, videos = data
 
-    # Get the top and bottom videos
-    top_vid = None
-    bottom_vid = None
-    for video in videos:
-        if top_video_id in video:
-            top_vid = video
-        if bottom_video_id in video:
-            bottom_vid = video
-
-    if top_video_id is None:
-        top_vid = next(video for video in videos if video != bottom_vid)
-    if bottom_video_id is None:
-        bottom_vid = next(video for video in videos if video != top_vid)
-
-    # Check if the top and bottom videos were found
-    if len(videos) == 2 and top_vid is not None and bottom_vid is not None:
-        output = os.path.join(output_folder, f'{batch_name}{mouse_number}{split_char}{run_number}.{output_video_extension}')
-        
-        if os.path.exists(output):
-            print(f'\nSkipping {mouse_number} {run_number}: {output} already exists.')
+        # Check that the videos list is not None
+        if videos is None:
             return
-        
-        # Merge the videos
-        merge_videos_top_bottom(bottom_vid, top_vid, output)
-    else:
-        print(f'\nSkipping {mouse_number} {run_number}: {len(videos)} videos found - {top_vid} and {bottom_vid}')
+
+        # Get the top and bottom videos
+        top_vid = None
+        bottom_vid = None
+        for video in videos:
+            if self.top_video_id in video:
+                top_vid = video
+            if self.bottom_video_id in video:
+                bottom_vid = video
+
+        if self.top_video_id is None:
+            top_vid = next(video for video in videos if video != bottom_vid)
+        if self.bottom_video_id is None:
+            bottom_vid = next(video for video in videos if video != top_vid)
+
+        # Check if the top and bottom videos were found
+        if len(videos) == 2 and top_vid is not None and bottom_vid is not None:
+            output = os.path.join(self.output_folder, f'{self.batch_name}{mouse_number}{self.split_char}{run_number}.{self.output_video_extension}')
+            
+            if os.path.exists(output):
+                print(f'\nSkipping {mouse_number} {run_number}: {output} already exists.')
+                return
+            
+            # Merge the videos
+            merge_videos_top_bottom(bottom_vid, top_vid, output)
+        else:
+            print(f'\nSkipping {mouse_number} {run_number}: {len(videos)} videos found - {top_vid} and {bottom_vid}')
 
 if __name__ == '__main__':
     # Retrieve all the videos in the batch_folder_path
