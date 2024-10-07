@@ -78,7 +78,7 @@ def retrieve_videos(folder_path:os.PathLike, extension:str) -> list[os.PathLike]
                  for root, _, files in os.walk(folder_path)
                  for file in files if file.endswith(extension)]
 
-def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str, 
+def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str, input_video_extension:str,
                             mouse_number_id:str, run_number_id:str, cage_id:str,
                             right_id:str, left_id:str,
                             right_video_keyword:str='right', left_video_keyword:str='left'):
@@ -246,7 +246,7 @@ if __name__ == '__main__':
     print(f'Found {len(avi_files)} videos.')
 
     # Dictionary to store videos by mouse number and run number
-    videos_dict = get_filepath_dict(avi_files, split_char, mouse_number_id, run_number_id, cage_id, right_id, left_id)
+    videos_dict = get_filepath_dict(avi_files, split_char, input_video_extension, mouse_number_id, run_number_id, cage_id, right_id, left_id)
 
     # Check if videos_dict is None or empty
     if not videos_dict:
