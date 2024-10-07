@@ -63,6 +63,11 @@ def merge_videos_top_bottom(top_video:os.PathLike, bottom_video:os.PathLike, out
     # Write the result to a file
     final_clip.write_videofile(output_filepath, codec=codec, verbose=verbose, logger=None)
 
+    # Close the clips
+    final_clip.close()
+    top_clip.close()
+    bottom_clip.close()
+
 def retrieve_videos(folder_path:os.PathLike, extension:str) -> list[os.PathLike]:
     """
         Retrieves all the files with extension 'extension' in the 'folder_path' and its subfolders.
