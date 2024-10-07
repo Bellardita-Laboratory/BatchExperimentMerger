@@ -6,6 +6,7 @@ from tqdm import tqdm
 # Change these to choose where to load and save the data
 batch_folder_path = r'D:\Stxbp1\Pre_surgery\Corridor\MU_Cx\bad' # Path to the folder containing the experiment folders
 output_folder = r'D:\Stxbp1\Pre_surgery\Corridor\MU_Cx\output' # Folder to save the merged videos
+batch_name = 'WildType' # Name of the batch to be used in the output file names
 
 # Change these to match the naming convention of the videos
 input_video_extension = '.avi' # The file extension of the videos
@@ -15,6 +16,7 @@ mouse_number_id = 'Mouse' # The string that identifies the mouse number. Format:
 run_number_id = 'Run' # The string that identifies the run number. Format: Run1, Run2, etc.
 right_id = 'Right' # The string that identifies the right sided video
 left_id = 'Left' # The string that identifies the left sided video
+cage_id = 'Cage' # The string that identifies the cage number. Format: Cage1, Cage2, etc.
 sideview_id = 'VENTRALVIEW' # The string that identifies the sideview video
 ventral_id = 'SIDEVIEW' # The string that identifies the ventral video
 
@@ -72,7 +74,7 @@ def retrieve_videos(folder_path:os.PathLike, extension:str) -> list[os.PathLike]
                  for file in files if file.endswith(extension)]
 
 def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str, 
-                            mouse_number_id:str, run_number_id:str,
+                            mouse_number_id:str, run_number_id:str, cage_id:str,
                             right_id:str, left_id:str,
                             right_video_keyword:str='right', left_video_keyword:str='left'):
     """
@@ -92,7 +94,7 @@ def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str,
             A dictionary where the keys are the mouse number and the values are 
                 dictionaries where the keys are the run number + left/right keyword and the values are a list of file paths.
     """
-    # Dictionary to store filepath by mouse number and run number
+    # # Dictionary to store videos by mouse number, run number, and cage_number
     return_dict : dict[str,dict[str,list[os.PathLike]]] = dict()
 
     for filepath in filepaths_list:
@@ -126,11 +128,13 @@ def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str,
         
         run_number = run_number[0]
 
+        cage_number = [part.replace(video_extension, '') for part in parts if cage_id in part]
+      
         # If the video is from the right/left side, add the right/left video keyword to the run number
         if right_id in base_name:
-            run_number += split_char + right_video_keyword
+            run_number += split_char + right_video_keyword + split_char + cage_number[0]
         elif left_id in base_name:
-            run_number += split_char + left_video_keyword
+            run_number += split_char + left_video_keyword + split_char + cage_number[0]
 
         # Add the mouse number entry to the dictionary if it doesn't exist
         if mouse_number not in return_dict:
@@ -154,7 +158,7 @@ def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str,
 
 def batch_merge_multiprocessing(filepaths_dict:dict[str,dict[str,list[os.PathLike]]], 
                                 top_video_id:str, bottom_video_id:str, 
-                                split_char:str, output_folder:str, output_video_extension:str):
+                                split_char:str, output_folder:str, output_video_extension:str, batch_name:str):
     """
         Merges all the videos in the 'filepaths_dict' using multiprocessing.
 
@@ -175,14 +179,14 @@ def batch_merge_multiprocessing(filepaths_dict:dict[str,dict[str,list[os.PathLik
 
     # Multiprocessing pool to merge the videos
     p = Pool()
-    for _ in tqdm(p.imap_unordered(func=lambda data: merge_videos(data, top_video_id, bottom_video_id, split_char, output_folder, output_video_extension), iterable=args_list), total=n_args):
+    for _ in tqdm(p.imap_unordered(func=lambda data: merge_videos(data, top_video_id, bottom_video_id, split_char, output_folder, output_video_extension, batch_name), iterable=args_list), total=n_args):
         pass
 
     p.close()
     p.join()
 
 def merge_videos(data:tuple[str,str,list[os.PathLike]], top_video_id:str, bottom_video_id:str, 
-                 split_char:str, output_folder:str, output_video_extension:str):
+                 split_char:str, output_folder:str, output_video_extension:str, batch_name:str):
     """
         Merges the videos in the 'data' tuple.
 
@@ -235,7 +239,7 @@ if __name__ == '__main__':
     print(f'Found {len(avi_files)} videos.')
 
     # Dictionary to store videos by mouse number and run number
-    videos_dict = get_filepath_dict(avi_files, split_char, mouse_number_id, run_number_id, right_id, left_id)
+    videos_dict = get_filepath_dict(avi_files, split_char, mouse_number_id, run_number_id, cage_id, right_id, left_id)
 
     # Check if videos_dict is None or empty
     if not videos_dict:
@@ -253,6 +257,6 @@ if __name__ == '__main__':
         raise ValueError('Both sideview_id and ventral_id are empty. Please fill at least one of them.')
     
     # Merge videos
-    batch_merge_multiprocessing(videos_dict, sideview_id, ventral_id, split_char, output_folder, output_video_extension)
+    batch_merge_multiprocessing(videos_dict, sideview_id, ventral_id, split_char, output_folder, output_video_extension, batch_name)
 
     print('\nDone!')
