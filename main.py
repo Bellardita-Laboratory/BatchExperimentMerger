@@ -4,7 +4,7 @@ from multiprocessing import Pool
 from tqdm import tqdm
 
 # Change these to choose where to load and save the data
-batch_folder_path = r'./Input' # Path to the folder containing the experiment folders
+batch_folder_path = r'./Test' # Path to the folder containing the experiment folders
 output_folder = r'./Output' # Folder to save the merged videos
 batch_name = 'WildType' # Name of the batch to be used in the output file names
 
@@ -134,12 +134,13 @@ def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str, input_vi
         run_number = run_number[0]
 
         cage_number = [part for part in splitted_basename if cage_id in part]
+        mouse_number = mouse_number + split_char + cage_number[0]
 
         # If the video is from the right/left side, add the right/left video keyword to the run number
         if right_id in base_name:
-            run_number += split_char + right_video_keyword + split_char + cage_number[0]
+            run_number += split_char + right_video_keyword + split_char
         elif left_id in base_name:
-            run_number += split_char + left_video_keyword + split_char + cage_number[0]
+            run_number += split_char + left_video_keyword + split_char
 
         # Add the mouse number entry to the dictionary if it doesn't exist
         if mouse_number not in return_dict:
@@ -240,7 +241,7 @@ class VideoMerger:
 
         # Check if the top and bottom videos were found
         if len(videos) == 2 and top_vid is not None and bottom_vid is not None:
-            output = os.path.join(self.output_folder, f'{self.batch_name}{mouse_number}{self.split_char}{run_number}.{self.output_video_extension}')
+            output = os.path.join(self.output_folder, f'{mouse_number}{self.split_char}{self.batch_name}{self.split_char}{run_number}.{self.output_video_extension}')
             
             if os.path.exists(output):
                 print(f'\nSkipping {mouse_number} {run_number}: {output} already exists.')
