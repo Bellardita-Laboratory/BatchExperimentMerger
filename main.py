@@ -6,7 +6,7 @@ from tqdm import tqdm
 # Change these to choose where to load and save the data
 batch_folder_path = r'./Test' # Path to the folder containing the experiment folders
 output_folder = r'./Output' # Folder to save the merged videos
-batch_name = 'WildType' # Name of the batch to be used in the output file names
+batch_name = 'mu' # Name of the batch to be used in the output file names
 
 # Change these to match the naming convention of the videos
 input_video_extension = '.avi' # The file extension of the videos
@@ -81,7 +81,7 @@ def retrieve_videos(folder_path:os.PathLike, extension:str) -> list[os.PathLike]
 def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str, input_video_extension:str,
                             mouse_number_id:str, run_number_id:str, cage_id:str,
                             right_id:str, left_id:str,
-                            right_video_keyword:str='right', left_video_keyword:str='left'):
+                            right_video_keyword:str='Right', left_video_keyword:str='Left'):
     """
         Organizes the paths in the 'filepaths_list' into a dictionary where the keys are the mouse number and run number + left/right keyword.
 
@@ -138,9 +138,9 @@ def get_filepath_dict(filepaths_list:list[os.PathLike], split_char:str, input_vi
 
         # If the video is from the right/left side, add the right/left video keyword to the run number
         if right_id in base_name:
-            run_number += split_char + right_video_keyword + split_char
+            run_number = right_video_keyword + split_char + run_number
         elif left_id in base_name:
-            run_number += split_char + left_video_keyword + split_char
+            run_number = left_video_keyword + split_char + run_number
 
         # Add the mouse number entry to the dictionary if it doesn't exist
         if mouse_number not in return_dict:
