@@ -22,7 +22,7 @@ ventral_id = 'SIDEVIEW' # The string that identifies the ventral video
 
 
 def merge_videos_top_bottom(top_video:os.PathLike, bottom_video:os.PathLike, output_filepath:os.PathLike, 
-                            fps:int=30, speed_factor:float=0.1,
+                            fps:int=30, speed_factor:float=1,
                             top_margin:int=50, middle_margin:int=50, bottom_margin:int=50, left_margin:int=30, right_margin:int=30,
                             codec:str='libx264', verbose:bool=False):
     """
