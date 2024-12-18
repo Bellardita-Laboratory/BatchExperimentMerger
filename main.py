@@ -1,4 +1,4 @@
-from moviepy.editor import VideoFileClip, CompositeVideoClip
+from moviepy import VideoFileClip, CompositeVideoClip
 import os
 from multiprocessing import Pool
 from tqdm import tqdm
@@ -52,16 +52,17 @@ def merge_videos_top_bottom(top_video:os.PathLike, bottom_video:os.PathLike, out
     # Create a composite video where one clip is on top and the other is at the bottom
     final_clip = CompositeVideoClip([
         # Clip 1 at the top
-        top_clip.set_position(("center", top_margin)),  
+        top_clip.with_position(("center", top_margin)),  
         # Clip 2 below the first
-        bottom_clip.set_position(("center", top_clip.h + top_margin + middle_margin))                    
+        bottom_clip.with_position(("center", top_clip.h + top_margin + middle_margin))                    
     ], size=(final_width, final_height))  # Final size is based on width and combined height
     
-    final_clip = final_clip.set_fps(fps)
-    final_clip = final_clip.speedx(factor=speed_factor)
+    final_clip = final_clip.with_fps(fps, change_duration=True)
+    # final_clip = final_clip.speedx(factor=speed_factor)
     
     # Write the result to a file
-    final_clip.write_videofile(output_filepath, codec=codec, verbose=verbose, logger=None)
+    logger = 'bar' if verbose else None
+    final_clip.write_videofile(output_filepath, codec=codec, logger=logger)
 
     # Close the clips
     final_clip.close()

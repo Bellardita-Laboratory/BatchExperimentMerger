@@ -1,2 +1,15 @@
-moviepy==1.0.3
+certifi==2024.12.14
+charset-normalizer==3.4.0
+decorator==4.4.2
+idna==3.10
+imageio==2.36.1
+imageio-ffmpeg==0.5.1
+moviepy==2.1.1
+numpy==2.2.0
+pillow==10.4.0
+proglog==0.1.10
+python-dotenv==1.0.1
+requests==2.32.3
+setuptools==75.6.0
 tqdm==4.66.4
+urllib3==2.2.3
